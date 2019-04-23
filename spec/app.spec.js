@@ -25,7 +25,7 @@ describe("/", () => {
   });
 
   describe("/topics", () => {
-    it("GET status:200, gets all the topics", () => {
+    it("GET status:200, gets an array of topic objects", () => {
       return request
         .get("/api/topics")
         .expect(200)
@@ -38,25 +38,30 @@ describe("/", () => {
     });
   });
 
-  // describe("/users", () => {
-  //   it("GET status:200, gets a user by their username", () => {
-  //     return request
-  //       .get("/api/:username")
-  //       .expect(200)
-  //       .then(({ body }) => {
-  //         expect(body.user).to.equal({});
-  //       });
-  //   });
-  // });
+  describe("/users", () => {
+    it("GET status:200, gets a user by their username", () => {
+      return request
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user).to.eql({
+            username: "butter_bridge",
+            name: "jonny",
+            avatar_url:
+              "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+          });
+        });
+    });
+  });
 
-  // describe("/api", () => {
-  //   it("GET status:200", () => {
-  //     return request
-  //       .get("/api")
-  //       .expect(200)
-  //       .then(({ body }) => {
-  //         expect(body.ok).to.equal(true);
-  //       });
-  //   });
-  // });
+  describe("/articles", () => {
+    it("GET status:200, gets an articles array of article objects", () => {
+      return request
+        .get("/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles[0]).to.eql({});
+        });
+    });
+  });
 });
