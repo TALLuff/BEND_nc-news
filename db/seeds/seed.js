@@ -7,7 +7,6 @@ const {
 const { convertTime, createRef, formatComments } = require("../utils/index");
 
 exports.seed = (knex, Promise) => {
-  console.log("Seeding...");
   return knex.migrate
     .rollback()
     .then(() => knex.migrate.latest())
