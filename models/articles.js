@@ -48,3 +48,26 @@ exports.updateArticleById = (article_id, inc_votes = 0) => {
     .increment("votes", inc_votes)
     .returning("*");
 };
+
+exports.fetchArticleCommentsById = (
+  article_id,
+  sort_by = "created_at",
+  order = "desc"
+) => {
+  return connection
+    .select("comment_id", "votes", "created_at", "author", "body")
+    .from("comments")
+    .where("article_id", "=", article_id)
+    .orderBy(sort_by, order);
+};
+
+exports.createArticleCommentById = (article_id, author, body) => {
+  return connection
+    .select("comment_id", "votes", "created_at", "author", "body")
+    .from("comments")
+    .then(() => {
+      return connection("comments")
+        .insert({ body, article_id, author })
+        .returning("*");
+    });
+};

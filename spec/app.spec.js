@@ -135,7 +135,7 @@ describe("/", () => {
           });
         });
     });
-    it("PATCH status:200, updates an articles votes by an object with key inc_votes and a value of a number", () => {
+    it("PATCH status:200, updates an articles votes by an object with key inc_votes and a value of a number, and returns the updated article", () => {
       return request
         .patch("/api/articles/1")
         .send({ inc_votes: 5 })
@@ -149,6 +149,76 @@ describe("/", () => {
             title: "Living in the shadow of a great man",
             topic: "mitch",
             votes: 105
+          });
+        });
+    });
+  });
+
+  describe("/api/articles/:article_id/comments", () => {
+    it("GET status:200, gets an articles comments in an array by the article_id", () => {
+      return request
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.an("array");
+          expect(body.comments[0]).to.eql({
+            author: "butter_bridge",
+            body:
+              "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            comment_id: 2,
+            created_at: "2016-11-22T12:36:03.389Z",
+            votes: 14
+          });
+        });
+    });
+    it("GET status:200, uses the sort_by query which sorts the comments by any valid column, defaults to created_at", () => {
+      return request
+        .get("/api/articles/1/comments?sort_by=votes")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.an("array");
+          expect(body.comments[0]).to.eql({
+            author: "icellusedkars",
+            body:
+              "Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — onyou it works.",
+            comment_id: 3,
+            created_at: "2015-11-23T12:36:03.389Z",
+            votes: 100
+          });
+        });
+    });
+    it("GET status:200, uses the order query which orders the comments by ascending or descending, defaults to desc", () => {
+      return request
+        .get("/api/articles/1/comments?order=asc")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comments).to.be.an("array");
+          expect(body.comments[0]).to.eql({
+            author: "butter_bridge",
+            body: "This morning, I showered for nine minutes.",
+            comment_id: 18,
+            created_at: "2000-11-26T12:36:03.389Z",
+            votes: 16
+          });
+        });
+    });
+    it("POST status:201, posts a new comment, taking an object with the properties username and body, responds with the posted comment", () => {
+      return request
+        .post("/api/articles/1/comments")
+        .send({
+          username: "butter_bridge",
+          body: "I woke up and solved 20 katas whilst brushing my teeth"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.comment).to.be.an("object");
+          expect(body.comment).to.eql({
+            article_id: 1,
+            author: "butter_bridge",
+            body: "I woke up and solved 20 katas whilst brushing my teeth",
+            comment_id: 19,
+            created_at: body.comment.created_at,
+            votes: 0
           });
         });
     });
