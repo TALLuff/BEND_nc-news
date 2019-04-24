@@ -135,7 +135,7 @@ describe("/", () => {
           });
         });
     });
-    it("PATCH status:200, updates an articles votes by an object with key inc_votes and a value of a number, and returns the updated article", () => {
+    it("PATCH status:200, updates an articles votes by an object with key inc_votes and a value of a number, returns the updated article", () => {
       return request
         .patch("/api/articles/1")
         .send({ inc_votes: 5 })
@@ -223,4 +223,35 @@ describe("/", () => {
         });
     });
   });
+
+  describe("/api/comments/:comment_id", () => {
+    it("PATCH status:200, updates a comments votes by an object with key inc_votes and a value of a number, returns the updated comment", () => {
+      return request
+        .patch("/api/comments/2")
+        .send({ inc_votes: 5 })
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment).to.eql({
+            article_id: 1,
+            author: "butter_bridge",
+            body:
+              "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            comment_id: 2,
+            created_at: "2016-11-22T12:36:03.389Z",
+            votes: 19
+          });
+        });
+    });
+    it("DELETE status:204, deletes a comment by the given comment_id, responds with status 204 and no content", () => {
+      return request.delete("/api/comments/2").expect(204);
+    });
+  });
+});
+
+describe("/errors", () => {
+  after(() => connection.destroy());
+
+  beforeEach(() => connection.seed.run());
+
+  describe("", () => {});
 });
