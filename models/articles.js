@@ -26,26 +26,50 @@ exports.fetchArticles = (
     })
     .orderBy(sort_by, order)
     .count({ comment_count: "comment_id" })
-    .leftJoin("comments", "articles.article_id", "comments.comment_id")
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id");
 };
 
 exports.fetchArticleById = article_id => {
+  if (/[^0-9]/.test(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad article_id" });
+  }
   return connection
     .select("articles.*")
     .from("articles")
     .where("articles.article_id", "=", article_id)
     .count({ comment_count: "comment_id" })
-    .leftJoin("comments", "articles.article_id", "comments.comment_id")
+    .leftJoin("comments", "articles.article_id", "comments.article_id")
     .groupBy("articles.article_id");
 };
 
-exports.updateArticleById = (article_id, inc_votes = 0) => {
+exports.updateArticleById = (article_id, body) => {
+  if (/[^0-9]/.test(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad article_id" });
+  } else if (!Object.keys(body).length) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, nothing sent"
+    });
+  } else if (
+    Object.keys(body)[0] !== "inc_votes" ||
+    Object.keys(body).length !== 1
+  ) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, invalid properties given"
+    });
+  } else if (/[^0-9]/.test(body.inc_votes)) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, inc_votes not integer value"
+    });
+  }
   return connection
     .select("articles.*")
     .from("articles")
     .where("articles.article_id", "=", article_id)
-    .increment("votes", inc_votes)
+    .increment("votes", body.inc_votes)
     .returning("*");
 };
 
@@ -54,6 +78,9 @@ exports.fetchArticleCommentsById = (
   sort_by = "created_at",
   order = "desc"
 ) => {
+  if (/[^0-9]/.test(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad article_id" });
+  }
   return connection
     .select("comment_id", "votes", "created_at", "author", "body")
     .from("comments")
@@ -61,13 +88,33 @@ exports.fetchArticleCommentsById = (
     .orderBy(sort_by, order);
 };
 
-exports.createArticleCommentById = (article_id, author, body) => {
-  return connection
-    .select("comment_id", "votes", "created_at", "author", "body")
-    .from("comments")
-    .then(() => {
-      return connection("comments")
-        .insert({ body, article_id, author })
-        .returning("*");
+exports.createArticleCommentById = (article_id, body) => {
+  if (/[^0-9]/.test(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad article_id" });
+  } else if (!Object.keys(body).length) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, nothing sent"
     });
+  } else if (
+    !Object.keys(body).includes("username") ||
+    !Object.keys(body).includes("body") ||
+    Object.keys(body).length !== 2
+  ) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, invalid properties given"
+    });
+  } else if (
+    typeof body.username !== "string" ||
+    typeof body.body !== "string"
+  ) {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request body, username and body must be strings"
+    });
+  }
+  return connection("comments")
+    .insert({ body: body.body, article_id, author: body.username })
+    .returning("*");
 };

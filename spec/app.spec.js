@@ -69,7 +69,7 @@ describe("/", () => {
             title: "Living in the shadow of a great man",
             topic: "mitch",
             votes: 100,
-            comment_count: "1"
+            comment_count: "13"
           });
         });
     });
@@ -127,7 +127,7 @@ describe("/", () => {
             article_id: 1,
             author: "butter_bridge",
             body: "I find this existence challenging",
-            comment_count: "1",
+            comment_count: "13",
             created_at: "2018-11-15T12:21:54.171Z",
             title: "Living in the shadow of a great man",
             topic: "mitch",
@@ -246,12 +246,347 @@ describe("/", () => {
       return request.delete("/api/comments/2").expect(204);
     });
   });
-});
 
-describe("/errors", () => {
-  after(() => connection.destroy());
+  describe("/errors", () => {
+    describe("GET /api", () => {
+      it("PATCH/POST/DELETE status: 405, if the request type is not get then that method is not allowed on /api", () => {
+        return request
+          .post("/api")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("GET status: 404, if route is not found on the /api", () => {
+        return request
+          .get("/api/abc")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Route Not Found");
+          });
+      });
+    });
 
-  beforeEach(() => connection.seed.run());
+    describe("GET /api/topics", () => {
+      it("PATCH/POST/DELETE status: 405, if the request type is not get then that method is not allowed on /api/topics", () => {
+        return request
+          .post("/api/topics")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("GET status: 404, if route is not found on the /api/topics", () => {
+        return request
+          .get("/api/topics/abc")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Route Not Found");
+          });
+      });
+    });
 
-  describe("", () => {});
+    describe("GET /api/users", () => {
+      it("PATCH/POST/DELETE status: 405, if the request type is not get then that method is not allowed on /api/users", () => {
+        return request
+          .post("/api/users/butter_bridge")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("GET status: 404, if the username is not contained in the database /api/users", () => {
+        return request
+          .get("/api/users/asdfghjkl")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Username is not valid");
+          });
+      });
+    });
+
+    describe("GET /api/articles", () => {
+      it("PATCH/POST/DELETE status: 405, if the request type is not get then that method is not allowed on /api/articles", () => {
+        return request
+          .patch("/api/articles")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      describe("QUERIES", () => {
+        //sort by
+        //order
+        //author/topic not in db
+      });
+      //NEED TO DO QUERIES HERE
+      //
+      //
+      //
+      //
+      //
+    });
+
+    describe("GET /api/articles/:article_id", () => {
+      it("POST/DELETE status: 405, if the request type is not get then that method is not allowed on /api/articles/:article_id", () => {
+        return request
+          .delete("/api/articles/5")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("GET status: 400, if the paramter of article_id is not a number /api/articles/:article_id", () => {
+        return request
+          .get("/api/articles/hehexd")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad article_id");
+          });
+      });
+      it("GET status: 404, if the paramter of article_id is not an existing article /api/articles/:article_id", () => {
+        return request
+          .get("/api/articles/12345")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Article does not exist");
+          });
+      });
+    });
+
+    describe("PATCH /api/articles/:article_id", () => {
+      it("PATCH status: 400, if the paramter of article_id is not a number /api/articles/:article_id", () => {
+        return request
+          .patch("/api/articles/hehexd")
+          .send({ inc_votes: 5 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad article_id");
+          });
+      });
+      it("PATCH status: 404, if the paramter of article_id is not an existing article /api/articles/:article_id", () => {
+        return request
+          .patch("/api/articles/12345")
+          .send({ inc_votes: 5 })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Article does not exist");
+          });
+      });
+      it("PATCH status: 400, if the request does not have a body sent with it /api/articles/:article_id", () => {
+        return request
+          .patch("/api/articles/1")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad request body, nothing sent");
+          });
+      });
+      it("PATCH status: 400, if the request body has more than just inc_votes as parameters or no inc_votes /api/articles/:article_id", () => {
+        return request
+          .patch("/api/articles/1")
+          .send({ inc_votes: 5, imCool: true })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, invalid properties given"
+            );
+          });
+      });
+      it("PATCH status: 400, if the request body has a parameter of inc_votes with a parameter that is not a number /api/articles/:article_id", () => {
+        return request
+          .patch("/api/articles/1")
+          .send({ inc_votes: "bigNumber" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, inc_votes not integer value"
+            );
+          });
+      });
+    });
+
+    describe("GET /api/articles/:article_id/comments", () => {
+      it("PATCH/DELETE status: 405, if the request type is not get then that method is not allowed on /api/articles/:article_id", () => {
+        return request
+          .delete("/api/articles/5")
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("GET status: 400, if the paramter of article_id is not a number /api/articles/:article_id", () => {
+        return request
+          .get("/api/articles/hehexd/comments")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad article_id");
+          });
+      });
+      it("GET status: 404, if the paramter of article_id is not an existing article /api/articles/:article_id", () => {
+        return request
+          .get("/api/articles/12345/comments")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Article does not exist");
+          });
+      });
+      describe("QUERIES", () => {
+        //sort_by is a valid column
+        //order
+      });
+      //
+      //
+      //
+      //
+      //
+      //
+      //
+      //
+    });
+
+    describe("POST /api/articles/:article_id/comments", () => {
+      it("POST status: 400, if the paramter of article_id is not a number /api/articles/:article_id/comments", () => {
+        return request
+          .post("/api/articles/hehexd/comments")
+          .send({
+            username: "butter_bridge",
+            body: "I woke up and solved 20 katas whilst brushing my teeth"
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad article_id");
+          });
+      });
+      it("POST status: 404, if the paramter of article_id is not an existing article /api/articles/:article_id/comments", () => {
+        return request
+          .post("/api/articles/12345/comments")
+          .send({
+            username: "butter_bridge",
+            body: "I woke up and solved 20 katas whilst brushing my teeth"
+          })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Not found");
+          });
+      });
+      it("POST status: 400, if the request does not have a body sent with it /api/articles/:article_id/comments", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad request body, nothing sent");
+          });
+      });
+      it("POST status: 400, if the request body does not have just the parameters username and body /api/articles/:article_id/comments", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .send({
+            username: "butter_bridge",
+            body: "I woke up and solved 20 katas whilst brushing my teeth",
+            hairColour: "Golden"
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, invalid properties given"
+            );
+          });
+      });
+      it("POST status: 400, if the request body has parameters of username and body but username and/or body is not a string /api/articles/:article_id/comments", () => {
+        return request
+          .post("/api/articles/1/comments")
+          .send({
+            username: "butter_bridge",
+            body: null
+          })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, username and body must be strings"
+            );
+          });
+      });
+    });
+
+    describe("PATCH /api/comments/:comment_id", () => {
+      it("GET/POST status: 405, if the request type is not get then that method is not allowed on /api/comments/:comment_id", () => {
+        return request
+          .get("/api/comments/1")
+          .send({ inc_votes: 5 })
+          .expect(405)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Method Not Allowed");
+          });
+      });
+      it("PATCH status: 400, if the paramter of comment_id is not a number /api/comments/:comment_id", () => {
+        return request
+          .patch("/api/comments/firstComment")
+          .send({ inc_votes: 5 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad comment_id");
+          });
+      });
+      it("PATCH status: 404, if the paramter of comment_id is not an existing comment /api/comments/:comment_id", () => {
+        return request
+          .patch("/api/comments/1001")
+          .send({ inc_votes: 5 })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Comment does not exist");
+          });
+      });
+      it("PATCH status: 400, if the request does not have a body sent with it /api/comments/:comment_id", () => {
+        return request
+          .patch("/api/comments/1")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad request body, nothing sent");
+          });
+      });
+      it("PATCH status: 400, if the request body has a parameter of inc_votes with a parameter that is not a number /api/comments/:comment_id", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ inc_votes: "bigNumber" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, inc_votes not integer value"
+            );
+          });
+      });
+      it("PATCH status: 400, if the request body has more than just inc_votes as parameters /api/comments/:comment_id", () => {
+        return request
+          .patch("/api/comments/1")
+          .send({ inc_votes: 5, imCool: true })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal(
+              "Bad request body, invalid properties given"
+            );
+          });
+      });
+    });
+
+    describe("DELETE /api/comments/:comment_id", () => {
+      it("DELETE status: 400, if the paramter of comment_id is not a number /api/comments/:comment_id", () => {
+        return request
+          .delete("/api/comments/firstComment")
+          .send({ inc_votes: 5 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Bad comment_id");
+          });
+      });
+      it("DELETE status: 404, if the paramter of comment_id is not an existing article /api/comments/:comment_id", () => {
+        return request
+          .delete("/api/comments/1001")
+          .send({ inc_votes: 5 })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).to.equal("Comment does not exist");
+          });
+      });
+    });
+  });
 });

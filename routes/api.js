@@ -1,5 +1,5 @@
 const apiRouter = require("express").Router();
-const { methodNotAllowed } = require("../errors");
+const { methodNotAllowed, routeNotFound } = require("../errors");
 const articlesRouter = require("./articles");
 const commentsRouter = require("./comments");
 const topicsRouter = require("./topics");
@@ -14,5 +14,7 @@ apiRouter.use("/articles", articlesRouter);
 apiRouter.use("/comments", commentsRouter);
 apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/users", usersRouter);
+
+apiRouter.route("/*").all(routeNotFound);
 
 module.exports = apiRouter;
