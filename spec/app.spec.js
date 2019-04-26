@@ -315,16 +315,57 @@ describe("/", () => {
           });
       });
       describe("QUERIES", () => {
-        //sort by
-        //order
-        //author/topic not in db
+        describe("sort_by", () => {
+          it("GET status:200, if the sort by query is used with an invalid column it will default to created_at", () => {
+            return request
+              .get("/api/articles?sort_by=random")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.articles).to.be.an("array");
+                expect(body.articles.length).to.equal(12);
+                expect(body.articles[0]).to.eql({
+                  article_id: 1,
+                  author: "butter_bridge",
+                  created_at: "2018-11-15T12:21:54.171Z",
+                  title: "Living in the shadow of a great man",
+                  topic: "mitch",
+                  votes: 100,
+                  comment_count: "13"
+                });
+              });
+          });
+        });
+        describe("order", () => {
+          it("GET status:200, uses the order query if an invalid order is given then it will default to descending", () => {
+            return request
+              .get("/api/articles?order=circular")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.articles).to.be.an("array");
+                expect(body.articles.length).to.equal(12);
+                expect(body.articles[0]).to.eql({
+                  article_id: 1,
+                  author: "butter_bridge",
+                  created_at: "2018-11-15T12:21:54.171Z",
+                  title: "Living in the shadow of a great man",
+                  topic: "mitch",
+                  votes: 100,
+                  comment_count: "13"
+                });
+              });
+          });
+        });
+        describe("author/topic", () => {
+          it("GET status:404, uses the author and topics queries and returns not found respectively if given an author/topic not in the database", () => {
+            return request
+              .get("/api/articles?author=iamcool")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).to.equal("User not found");
+              });
+          });
+        });
       });
-      //NEED TO DO QUERIES HERE
-      //
-      //
-      //
-      //
-      //
     });
 
     describe("GET /api/articles/:article_id", () => {
@@ -431,17 +472,38 @@ describe("/", () => {
           });
       });
       describe("QUERIES", () => {
-        //sort_by is a valid column
-        //order
+        describe("sort_by", () => {
+          it("GET status:200, if the sort by query is used with an invalid column it will default to created_at", () => {
+            return request
+              .get("/api/articles/1/comments?sort_by=random")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.comments).to.be.an("array");
+                expect(body.comments.length).to.equal(13);
+                expect(body.comments[0]).to.eql({
+                  comment_id: 2,
+                  votes: 14,
+                  created_at: "2016-11-22T12:36:03.389Z",
+                  author: "butter_bridge",
+                  body:
+                    "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky."
+                });
+              });
+          });
+        });
+        describe("order", () => {
+          it("GET status:200, uses the order query if an invalid order is given then it will default to descending", () => {
+            return request
+              .get("/api/articles/2/comments?order=circular")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.comments).to.be.an("array");
+                expect(body.comments.length).to.equal(0);
+                expect(body.comments[0]).to.eql(undefined);
+              });
+          });
+        });
       });
-      //
-      //
-      //
-      //
-      //
-      //
-      //
-      //
     });
 
     describe("POST /api/articles/:article_id/comments", () => {

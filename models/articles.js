@@ -118,3 +118,25 @@ exports.createArticleCommentById = (article_id, body) => {
     .insert({ body: body.body, article_id, author: body.username })
     .returning("*");
 };
+
+exports.fetchUserByUsername = username => {
+  return connection
+    .select("*")
+    .from("users")
+    .modify(query => {
+      if (username) {
+        query.where("username", "=", username);
+      }
+    });
+};
+
+exports.fetchTopicBySlug = slug => {
+  return connection
+    .select("*")
+    .from("topics")
+    .modify(query => {
+      if (slug) {
+        query.where("topics.slug", "=", slug);
+      }
+    });
+};

@@ -14,10 +14,13 @@ exports.handleCustomErrors = (err, req, res, next) => {
 exports.handlePsqlErrors = (err, req, res, next) => {
   const psqlBadRequestCodes = ["22P02"];
   const psqlNotFoundCodes = ["23503"];
+  const psqlColumnNotFound = ["42703"];
   if (psqlBadRequestCodes.includes(err.code)) {
     res.status(400).send({ msg: err.msg || "Bad Request" });
   } else if (psqlNotFoundCodes.includes(err.code)) {
     res.status(404).send({ msg: err.msg || "Not found" });
+  } else if (psqlColumnNotFound.includes(err.code)) {
+    res.status(404).send({ msg: err.msg || "Column not found" });
   }
   next(err);
 };

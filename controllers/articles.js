@@ -3,13 +3,41 @@ const {
   fetchArticleById,
   updateArticleById,
   fetchArticleCommentsById,
-  createArticleCommentById
+  createArticleCommentById,
+  fetchUserByUsername,
+  fetchTopicBySlug
 } = require("../models/articles");
 
 exports.getArticles = (req, res, next) => {
-  const { author, topic, sort_by, order } = req.query;
-  fetchArticles(author, topic, sort_by, order)
-    .then(articles => {
+  const validColumns = [
+    "article_id",
+    "author",
+    "created_at",
+    "title",
+    "topic",
+    "votes",
+    "comment_count"
+  ];
+  let { author, topic, sort_by, order } = req.query;
+  if (!validColumns.includes(sort_by)) {
+    sort_by = undefined;
+  }
+  if (!["asc", "desc"].includes(order)) {
+    order = undefined;
+  }
+
+  const fetchUserPromise = fetchUserByUsername(author);
+  const fetchTopicPromise = fetchTopicBySlug(topic);
+  const fetchArticlesPromise = fetchArticles(author, topic, sort_by, order);
+
+  Promise.all([fetchUserPromise, fetchTopicPromise, fetchArticlesPromise])
+    .then(([[user], [topic], articles]) => {
+      if (!user) {
+        return Promise.reject({ status: 404, msg: "User not found" });
+      }
+      if (!topic) {
+        return Promise.reject({ status: 404, msg: "Topic not found" });
+      }
       res.status(200).send({ articles });
     })
     .catch(next);
@@ -40,8 +68,15 @@ exports.patchArticleById = (req, res, next) => {
 };
 
 exports.getArticleCommentsById = (req, res, next) => {
+  const validColumns = ["author", "body", "comment_id", "created_at", "votes"];
   const { article_id } = req.params;
-  const { sort_by, order } = req.query;
+  let { sort_by, order } = req.query;
+  if (!validColumns.includes(sort_by)) {
+    sort_by = undefined;
+  }
+  if (!["asc", "desc"].includes(order)) {
+    order = undefined;
+  }
   const fetchArticlePromise = fetchArticleById(article_id);
   const fetchCommentsPromise = fetchArticleCommentsById(
     article_id,
