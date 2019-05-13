@@ -6,6 +6,9 @@ const {
   handlePsqlErrors,
   handle500
 } = require("./errors");
+const cors = require("cors");
+
+app.use(cors());
 
 const app = express();
 

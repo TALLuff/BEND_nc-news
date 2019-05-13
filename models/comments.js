@@ -16,7 +16,7 @@ exports.updateCommentById = (comment_id, body) => {
       status: 400,
       msg: "Bad request body, invalid properties given"
     });
-  } else if (/[^0-9]/.test(body.inc_votes)) {
+  } else if (/[^\-0-9]/.test(body.inc_votes)) {
     return Promise.reject({
       status: 400,
       msg: "Bad request body, inc_votes not integer value"
