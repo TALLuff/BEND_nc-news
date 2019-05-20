@@ -114,6 +114,30 @@ describe("/", () => {
           expect(body.articles[0].article_id).to.eql(12);
         });
     });
+    it.only("POST status:200, posts a new article to the articles list", () => {
+      return request
+        .post("/api/articles")
+        .send({
+          author: "butter_bridge",
+          topic: "mitch",
+          title: "Coding is fun xD",
+          body: "Coding in the morning, coding in the evening!"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(body.article).to.be.an("object");
+          expect(body.article).to.eql({
+            article_id: 13,
+            author: "butter_bridge",
+            body: "Coding in the morning, coding in the evening!",
+            created_at: body.article.created_at,
+            votes: 0,
+            title: "Coding is fun xD",
+            topic: "mitch",
+            comment_count: 0
+          });
+        });
+    });
   });
 
   describe("/articles/:article_id", () => {
@@ -151,6 +175,9 @@ describe("/", () => {
             votes: 105
           });
         });
+    });
+    it.only("DELETE status:204, uses the article id and deletes an article", () => {
+      return request.delete("/api/articles/1").expect(204);
     });
   });
 

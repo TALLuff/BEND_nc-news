@@ -4,19 +4,23 @@ const {
   getArticleById,
   patchArticleById,
   getArticleCommentsById,
-  postArticleCommentById
+  postArticleCommentById,
+  postArticle,
+  deleteArticleById
 } = require("../controllers/articles");
 const { methodNotAllowed, routeNotFound } = require("../errors");
 
 articlesRouter
   .route("/")
   .get(getArticles)
+  .post(postArticle)
   .all(methodNotAllowed);
 
 articlesRouter
   .route("/:article_id")
   .get(getArticleById)
   .patch(patchArticleById)
+  .delete(deleteArticleById)
   .all(methodNotAllowed);
 
 articlesRouter

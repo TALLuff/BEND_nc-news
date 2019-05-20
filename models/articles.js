@@ -140,3 +140,31 @@ exports.fetchTopicBySlug = slug => {
       }
     });
 };
+
+exports.createArticle = (author, topic, title, body) => {
+  return connection("articles")
+    .insert({ author, topic, title, body })
+    .returning("*")
+    .then(article => {
+      article[0].comment_count = 0;
+      return article;
+    });
+};
+
+exports.removeArticleById = article_id => {
+  if (/[^0-9]/.test(article_id)) {
+    return Promise.reject({ status: 400, msg: "Bad article_id" });
+  }
+  return connection
+    .select("*")
+    .from("comments")
+    .where("article_id", "=", article_id)
+    .del()
+    .then(() => {
+      return connection
+        .select("*")
+        .from("articles")
+        .where("article_id", "=", article_id)
+        .del();
+    });
+};
